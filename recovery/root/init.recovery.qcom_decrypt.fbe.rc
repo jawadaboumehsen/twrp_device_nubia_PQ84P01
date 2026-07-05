@@ -1,0 +1,5 @@
+on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
+    install_keyring
+
+on property:twrp.all.users.decrypted=true
+    setprop crypto.ready 0

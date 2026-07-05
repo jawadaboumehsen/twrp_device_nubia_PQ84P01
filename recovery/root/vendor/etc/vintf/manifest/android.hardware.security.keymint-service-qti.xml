@@ -1,0 +1,25 @@
+<!--
+    Input:
+        vendor/qcom/proprietary/securemsm/keymaster_utils/android.hardware.security.keymint-service-qti.xml
+    version: 8.0 → 1.0 (libvintf@4.0 in recovery cannot parse 8.0)
+-->
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>android.hardware.security.keymint</name>
+        <version>3</version>
+        <fqname>IKeyMintDevice/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.security.keymint</name>
+        <version>3</version>
+        <fqname>IRemotelyProvisionedComponent/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.security.secureclock</name>
+        <fqname>ISecureClock/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.security.sharedsecret</name>
+        <fqname>ISharedSecret/default</fqname>
+    </hal>
+</manifest>

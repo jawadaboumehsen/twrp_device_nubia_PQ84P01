@@ -1,0 +1,14 @@
+import /init.recovery.qcom_decrypt.fbe.rc
+
+# Reliable path for triggering prepdecrypt.sh: the early-boot "exec" in
+# init.recovery.qcom.rc can fire before device-mapper is ready, so this
+# property-triggered service is the one that actually runs it in practice.
+on property:ro.crypto.state=encrypted && property:ro.boot.dynamic_partitions=true
+    start prepdecrypt
+
+service prepdecrypt /system/bin/prepdecrypt.sh
+    user root
+    group root
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0

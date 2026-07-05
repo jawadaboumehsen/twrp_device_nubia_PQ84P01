@@ -1,0 +1,21 @@
+<!--
+    wpa_supplicant is built with CONFIG_CTRL_IFACE_AIDL and registers itself as
+    android.hardware.wifi.supplicant.ISupplicant/default with servicemanager on
+    startup. servicemanager rejects addService() for any AIDL interface/instance
+    not declared in the device VINTF manifest — this is a separate check from
+    SELinux (confirmed via dmesg: "Could not find ... in the VINTF manifest" is
+    logged by servicemanager itself, independent of the avc: denied lines, which
+    are all permissive=1 for the recovery domain and not actually enforced).
+    Without this fragment wpa_supplicant's AIDL registration fails and it exits
+    immediately, before ever reaching nl80211/netlink driver setup.
+
+    Version 3 confirmed via wpa_supplicant's own "-dd" log output on-device
+    ("AIDL Interface version: 3").
+-->
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>android.hardware.wifi.supplicant</name>
+        <version>3</version>
+        <fqname>ISupplicant/default</fqname>
+    </hal>
+</manifest>

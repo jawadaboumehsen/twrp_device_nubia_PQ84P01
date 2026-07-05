@@ -1,0 +1,14 @@
+# Recovery-modified keymint service for SM8750 QTEE.
+# Changes from stock: user root (needed to open /dev/qseecom in recovery),
+# explicit LD_LIBRARY_PATH (vendor libs before system to avoid AOSP libc++ mismatch),
+# seclabel u:r:recovery:s0.
+
+on property:vendor.sys.listeners.registered=true
+    start vendor.keymint-qti
+
+service vendor.keymint-qti /vendor/bin/hw/android.hardware.security.keymint-service-qti
+    class early_hal
+    user root
+    group root drmrpc
+    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib64/hw:/system/lib64:/sbin
+    seclabel u:r:recovery:s0

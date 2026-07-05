@@ -1,0 +1,7 @@
+service vendor.qti.vibrator /vendor/bin/hw/vendor.qti.hardware.vibrator.service
+    class hal
+    user root
+    group root input
+    seclabel u:r:recovery:s0
+    setenv RICHTAP_DEVICE_PATH /dev/awinic_haptic;/dev/awinic_x_haptic
+    setenv ENV_RICHTAP_CONFIG_PATH /odm/etc/aac_richtap.config;/odm/etc/aac_richtap_1.config

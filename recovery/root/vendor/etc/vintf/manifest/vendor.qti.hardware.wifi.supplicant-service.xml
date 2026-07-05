@@ -1,0 +1,16 @@
+<!--
+    QTI's vendor extension to the AOSP wifi supplicant AIDL HAL. wpa_supplicant
+    also tries to register vendor.qti.hardware.wifi.supplicant.ISupplicantVendor/default
+    alongside the standard android.hardware.wifi.supplicant.ISupplicant/default
+    (see android.hardware.wifi.supplicant-service.xml); this registration hit the
+    same "not declared in VINTF manifest" rejection from servicemanager. Version 1
+    matches the prebuilt client stub already required by wpa_supplicant:
+    vendor.qti.hardware.wifi.supplicant-V1-ndk.so.
+-->
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>vendor.qti.hardware.wifi.supplicant</name>
+        <version>1</version>
+        <fqname>ISupplicantVendor/default</fqname>
+    </hal>
+</manifest>

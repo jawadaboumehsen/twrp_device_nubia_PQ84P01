@@ -1,0 +1,14 @@
+<manifest version="1.0" type="framework">
+    <!-- Framework (system) AIDL services declared here.
+         libvintf requires this base manifest.xml to exist before reading
+         fragment directory (manifest/*.xml). Without it, GetFrameworkHalManifest()
+         returns -2/ENOENT and the servicemanager refuses to accept addService()
+         calls for VINTF-stability binders (UNKNOWN_ERROR). -->
+    <hal format="aidl">
+        <name>android.system.keystore2</name>
+        <interface>
+            <name>IKeystoreService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</manifest>

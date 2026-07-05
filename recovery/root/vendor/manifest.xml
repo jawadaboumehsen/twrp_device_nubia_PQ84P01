@@ -1,0 +1,10 @@
+<!--
+    Input:
+        device/qcom/sun/manifest_sun.xml
+-->
+<manifest version="1.0" type="device" target-level="202404">
+    <hal format="aidl">
+        <name>android.hardware.gatekeeper</name>
+        <fqname>IGatekeeper/default</fqname>
+    </hal>
+</manifest>

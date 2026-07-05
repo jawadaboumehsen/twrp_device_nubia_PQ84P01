@@ -1,0 +1,143 @@
+# WLAN bring-up for recovery, adapted from twrp_device_xiaomi_sm8750_thales's
+# init.recovery.wifi.rc. Nubia PQ84P01 uses the identical WCN "peach" chipset
+# and kernel module set (confirmed via live device dmesg + /vendor_dlkm inspection),
+# so the property-trigger chain below is ported with module/service names unchanged.
+#
+# vendor.qrtr-ns and vendor.rmt_storage are already defined and started (via `on fs`)
+# in init.recovery.qcom.rc, so they are not redefined here.
+
+on property:twrp.modules.loaded=true
+    write /proc/sys/kernel/firmware_config/force_sysfs_fallback 1
+    start cp-wifi-ko
+
+on property:twrp.cpko=true
+    wait /odm/wifi/modules/cnss_prealloc.ko
+    insmod /odm/wifi/modules/cnss_prealloc.ko
+    wait /odm/wifi/modules/cnss_nl.ko
+    insmod /odm/wifi/modules/cnss_nl.ko
+    wait /odm/wifi/modules/wlan_firmware_service.ko
+    insmod /odm/wifi/modules/wlan_firmware_service.ko
+    wait /odm/wifi/modules/cnss_plat_ipc_qmi_svc.ko
+    insmod /odm/wifi/modules/cnss_plat_ipc_qmi_svc.ko
+    wait /odm/wifi/modules/smem-mailbox.ko
+    insmod /odm/wifi/modules/smem-mailbox.ko
+    wait /odm/wifi/modules/cnss_utils.ko
+    insmod /odm/wifi/modules/cnss_utils.ko
+    wait /odm/wifi/modules/cnss2.ko
+    insmod /odm/wifi/modules/cnss2.ko
+    wait /odm/wifi/modules/gsim.ko
+    insmod /odm/wifi/modules/gsim.ko
+    wait /odm/wifi/modules/rmnet_mem.ko
+    insmod /odm/wifi/modules/rmnet_mem.ko
+    wait /odm/wifi/modules/ipam.ko
+    insmod /odm/wifi/modules/ipam.ko
+    wait /odm/wifi/modules/rfkill.ko
+    insmod /odm/wifi/modules/rfkill.ko
+    wait /odm/wifi/modules/cfg80211.ko
+    insmod /odm/wifi/modules/cfg80211.ko
+    write /dev/kmsg "[nubiawifi][early-init] WiFi early-init modules loaded successfully!"
+    setprop twrp.insmodko 1
+
+on init
+    symlink /system/etc/firmware /etc/firmware
+
+    mkdir /vendor/firmware/wlan 0777 root shell
+    mkdir /vendor/firmware/wlan/qca_cld 0777 root shell
+    mkdir /vendor/firmware/wlan/qca_cld/peach 0777 root shell
+    mkdir /vendor/firmware/wlan/qca_cld/peach_v2 0777 root shell
+
+    symlink /vendor/etc/wifi/peach/WCNSS_qcom_cfg.ini /vendor/firmware/wlan/qca_cld/peach/WCNSS_qcom_cfg.ini
+    symlink /vendor/etc/wifi/peach_v2/WCNSS_qcom_cfg.ini /vendor/firmware/wlan/qca_cld/peach_v2/WCNSS_qcom_cfg.ini
+    # wlan_mac.bin symlinks are created by cp-wifi-ko.sh, once /persist is mounted
+
+    mkdir /data/misc 0777 root shell
+    mkdir /data/misc/wifi 0777 root shell
+
+on boot
+    write /sys/kernel/cnss/recovery 3
+    chown radio wakelock /sys/power/wake_lock
+    chown radio wakelock /sys/power/wake_unlock
+    chmod 0660 /sys/power/wake_lock
+    chmod 0660 /sys/power/wake_unlock
+
+service vendor.tftp_server /vendor/bin/tftp_server
+    disabled
+    user root
+    seclabel u:r:recovery:s0
+
+service vendor.per_mgr /vendor/bin/pm-service
+    disabled
+    user root
+    group root
+    seclabel u:r:recovery:s0
+
+service vendor.pd_mapper /vendor/bin/pd-mapper
+    disabled
+    user root
+    group root
+    seclabel u:r:recovery:s0
+
+service vendor.per_proxy /vendor/bin/pm-proxy
+    disabled
+    user root
+    group root
+    seclabel u:r:recovery:s0
+
+service cnss-daemon /vendor/bin/cnss-daemon -n -l
+    disabled
+    user root
+    group root system inet net_admin wifi
+    capabilities NET_ADMIN
+    seclabel u:r:recovery:s0
+
+service wpa_supplicant /vendor/bin/wpa_supplicant -Dnl80211 -iwlan0 -dd -O/tmp/recovery/sockets -c/vendor/etc/wifi/wpa_supplicant.conf
+    disabled
+    seclabel u:r:recovery:s0
+
+service dhcpcd /system/bin/dhcpcd wlan0 -B
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
+service cp-wifi-ko /system/bin/cp-wifi-ko.sh
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
+# Triggered manually via `adb shell setprop survival.start.service true`
+on property:survival.start.service=true
+    write /dev/kmsg "[nubiawifi][service] Starting Qualcomm services"
+    start vendor.qrtr-ns
+    start vendor.rmt_storage
+
+on early-boot
+    write /sys/kernel/icnss/wlan_en_delay 1000
+    write /sys/kernel/icnss/wpss_boot 1
+
+# Triggered manually via `adb shell setprop qcomwlan.driver.load true`
+on property:qcomwlan.driver.load=true
+    write /sys/devices/platform/soc/b0000000.qcom,cnss-peach/fs_ready 1
+    write /dev/kmsg "[nubiawifi][driver] Starting load WiFi driver modules..."
+    wait /odm/wifi/modules/qca_cld3_peach_v2.ko
+    insmod /odm/wifi/modules/qca_cld3_peach_v2.ko
+    write /dev/kmsg "[nubiawifi][driver] qca_cld3_peach_v2.ko loaded"
+    write /dev/kmsg "[nubiawifi][interface] Waiting for wlan0 create..."
+    wait /sys/class/net/wlan0 10
+    write /dev/kmsg "[nubiawifi][interface] Interface wlan0 found"
+    setprop nubiawifi.driver.ready true
+
+on property:twrp.insmodko=1
+    setprop survival.start.service true
+    setprop qcomwlan.driver.load true
+
+on property:nubiawifi.driver.ready=true
+    mkdir /tmp/recovery 0777 root root
+    mkdir /tmp/recovery/sockets 0777 root root
+    start wpa_supplicant
+    write /dev/kmsg "[nubiawifi][interface] wpa_supplicant started"
+
+on property:supplicant.status=running
+    start wpa_supplicant
+
+on property:supplicant.status=stopped
+    stop wpa_supplicant

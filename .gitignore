@@ -1,0 +1,18 @@
+# Build output
+out/
+build/
+
+# Runtime logs
+*.log
+
+# AI assistant configs (not part of the device tree)
+.claude/
+CLAUDE.md
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

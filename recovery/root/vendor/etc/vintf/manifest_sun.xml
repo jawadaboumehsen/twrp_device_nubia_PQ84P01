@@ -1,0 +1,7 @@
+<!--
+    Input:
+        device/qcom/sun/manifest_sun.xml
+    Gatekeeper removed — android.hardware.gatekeeper-service-qti not present in recovery ramdisk.
+-->
+<manifest version="1.0" type="device" target-level="202404">
+</manifest>
