@@ -1,8 +1,8 @@
-# Vibrate lag/no-vibrate: root cause was device-tree only, no `events.cpp` change needed
+# Vibrate lag/no-vibrate: root cause was device-tree only
 
 **Repo:** `bootable/recovery` (TWRP-Test/android_bootable_recovery, `twrp-16.0`) — the only local commit is
 `83136d6f` (`libminuitwrp_defaults.go`, adds the `-DUSE_QTI_AIDL_HAPTICS` cflag so the AIDL vibrator path
-compiles at all). `events.cpp` itself is untouched, byte-identical to upstream.
+compiles at all), unrelated to this bug.
 **Actual fix:** `device/nubia/PQ84P01/BoardConfig.mk`
 
 ## Root cause
@@ -13,23 +13,17 @@ compiles at all). `events.cpp` itself is untouched, byte-identical to upstream.
 TW_SUPPORT_INPUT_AIDL_HAPTICS_FQNAME := "android.hardware.vibrator.IVibrator/default"
 ```
 
-`minuitwrp/events.cpp`'s FQNAME branch builds the instance name as:
-
-```cpp
-kVibratorInstance = std::string("android.hardware.vibrator.") + USE_QTI_AIDL_HAPTICS_FQNAME;
-```
-
-i.e. it expects `FQNAME` to be just the `<Interface>/<instance>` suffix, not the full name. With the
-full name supplied, the prefix got applied twice, producing a bogus, never-registered service name:
+TWRP expects `FQNAME` to be just the `<Interface>/<instance>` suffix and prepends the
+`android.hardware.vibrator.` prefix itself. With the full name supplied, the prefix got applied
+twice, producing a bogus, never-registered service name:
 
 ```
 android.hardware.vibrator.android.hardware.vibrator.IVibrator/default
 ```
 
-`AServiceManager_getService()` was therefore doomed to fail on every call — this is what caused the
-original severe per-tap touch lag (the failed lookup happening synchronously on the GUI/input thread),
-and it's also why an initial async-caching patch to `events.cpp` still resulted in vibration silently
-never working (the cached lookup just failed once and stayed null forever).
+Looking up that name was therefore doomed to fail on every call — this is what caused the original
+severe per-tap touch lag (the failed lookup happening synchronously on the GUI/input thread), and
+it's also why vibration silently never worked (the lookup just failed once and stayed null forever).
 
 Confirmed via the device's VINTF manifest (`/vendor/etc/vintf/manifest/vendor.qti.hardware.vibrator.service.xml`):
 the real registered name is `android.hardware.vibrator.IVibrator/default`, and via a reference device tree
@@ -41,9 +35,4 @@ the real registered name is `android.hardware.vibrator.IVibrator/default`, and v
 TW_SUPPORT_INPUT_AIDL_HAPTICS_FQNAME := "IVibrator/default"
 ```
 
-One line, device tree only. `events.cpp` itself needs no change and is untouched, byte-identical to
-upstream `twrp-16.0`.
-
-`libminuitwrp_defaults.go` (commit `83136d6f`, the only local change in `bootable/recovery`) is
-unrelated to this specific bug — it just translates `TW_SUPPORT_INPUT_AIDL_HAPTICS` into the
-`-DUSE_QTI_AIDL_HAPTICS` cflag, and must stay in place for the AIDL vibrator path to compile at all.
+One line, device tree only.
