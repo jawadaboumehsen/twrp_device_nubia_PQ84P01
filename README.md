@@ -26,7 +26,7 @@ make -j$(nproc) recoveryimage
 ## Documentation
 
 - [`note.md`](note.md) — using WiFi and ADB-over-WiFi in recovery
-- [`UPSTREAM_VIBRATE_FIX.md`](UPSTREAM_VIBRATE_FIX.md) — root cause of the vibrator fix
+- [`UPSTREAM_Edite.md`](UPSTREAM_Edite.md) — changes made to upstream `bootable/recovery`
 
 ---
 
