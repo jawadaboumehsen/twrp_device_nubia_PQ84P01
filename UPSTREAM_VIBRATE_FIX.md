@@ -1,6 +1,8 @@
-# Vibrate lag/no-vibrate: root cause was device-tree only, no TWRP upstream change needed
+# Vibrate lag/no-vibrate: root cause was device-tree only, no `events.cpp` change needed
 
-**Repo:** `bootable/recovery` (TWRP-Test/android_bootable_recovery, `twrp-16.0`) — unmodified, byte-identical to upstream.
+**Repo:** `bootable/recovery` (TWRP-Test/android_bootable_recovery, `twrp-16.0`) — the only local commit is
+`83136d6f` (`libminuitwrp_defaults.go`, adds the `-DUSE_QTI_AIDL_HAPTICS` cflag so the AIDL vibrator path
+compiles at all). `events.cpp` itself is untouched, byte-identical to upstream.
 **Actual fix:** `device/nubia/PQ84P01/BoardConfig.mk`
 
 ## Root cause
@@ -39,9 +41,9 @@ the real registered name is `android.hardware.vibrator.IVibrator/default`, and v
 TW_SUPPORT_INPUT_AIDL_HAPTICS_FQNAME := "IVibrator/default"
 ```
 
-One line, device tree only. No `bootable/recovery` change of any kind is required — `events.cpp` is
-untouched, byte-identical to upstream `twrp-16.0`.
+One line, device tree only. `events.cpp` itself needs no change and is untouched, byte-identical to
+upstream `twrp-16.0`.
 
-`libminuitwrp_defaults.go` (commit `83136d6f`, the only other local change in `bootable/recovery`)
-is unrelated to this bug — it just translates `TW_SUPPORT_INPUT_AIDL_HAPTICS` into the
-`-DUSE_QTI_AIDL_HAPTICS` cflag and must stay in place for the AIDL path to compile at all.
+`libminuitwrp_defaults.go` (commit `83136d6f`, the only local change in `bootable/recovery`) is
+unrelated to this specific bug — it just translates `TW_SUPPORT_INPUT_AIDL_HAPTICS` into the
+`-DUSE_QTI_AIDL_HAPTICS` cflag, and must stay in place for the AIDL vibrator path to compile at all.
