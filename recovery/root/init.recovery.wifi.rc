@@ -1,7 +1,5 @@
-# WLAN bring-up for recovery, adapted from twrp_device_xiaomi_sm8750_thales's
-# init.recovery.wifi.rc. Nubia PQ84P01 uses the identical WCN "peach" chipset
-# and kernel module set (confirmed via live device dmesg + /vendor_dlkm inspection),
-# so the property-trigger chain below is ported with module/service names unchanged.
+# WLAN bring-up for recovery. Nubia PQ84P01 uses the WCN "peach" chipset
+# and kernel module set (confirmed via live device dmesg + /vendor_dlkm inspection).
 #
 # vendor.qrtr-ns and vendor.rmt_storage are already defined and started (via `on fs`)
 # in init.recovery.qcom.rc, so they are not redefined here.

@@ -138,8 +138,8 @@ TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
 # (cold-boot test, recovery.log inspection) that keymint's check is actually a
 # downgrade guard — current >= stored passes regardless of the exact value — so
 # instead we report values always in the future. This survives any OTA automatically
-# with no live re-detection needed. Same strategy used by the reference Xiaomi
-# sm8750_thales tree. prepdecrypt.sh applies the matching runtime override via resetprop.
+# with no live re-detection needed. prepdecrypt.sh applies the matching runtime
+# override via resetprop.
 PLATFORM_VERSION := 99.87.36
 PLATFORM_VERSION_LAST_STABLE := $(PLATFORM_VERSION)
 PLATFORM_SECURITY_PATCH := 2099-12-31

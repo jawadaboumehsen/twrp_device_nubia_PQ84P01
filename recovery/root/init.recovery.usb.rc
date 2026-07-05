@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Nubia PQ84P01 (SM8750) recovery USB gadget setup.
-# Modeled after the Xiaomi sm8750_thales TWRP tree, with nubia VID/PID.
 
 on early-fs
     setprop sys.usb.configfs 0

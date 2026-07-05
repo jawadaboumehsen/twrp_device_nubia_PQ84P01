@@ -12,8 +12,7 @@
 # is a downgrade guard, not an exact match: current >= stored passes regardless of the
 # actual stored value. So instead of tracking the live version, we just report values
 # far in the future — always satisfies the guard, survives any OTA automatically, and
-# no partition mounting/parsing is needed anymore. Same strategy used by the reference
-# Xiaomi sm8750_thales tree.
+# no partition mounting/parsing is needed anymore.
 #
 # Also sets crypto.ready=1 which triggers TWRP's FBE decryption unlock sequence
 # (defined in init.recovery.qcom_decrypt.fbe.rc).

@@ -2,8 +2,8 @@
 # Copies the WCN "peach" WiFi driver .ko files from /vendor_dlkm and /system_dlkm
 # (separate logical partitions, not part of the recovery ramdisk) into
 # /odm/wifi/modules so init.recovery.wifi.rc can insmod them in dependency order.
-# Adapted from twrp_device_xiaomi_sm8750_thales's cp-wifi-ko.sh; module list verified
-# via live adb inspection of this device's actual /vendor_dlkm and /system_dlkm.
+# Module list verified via live adb inspection of this device's actual
+# /vendor_dlkm and /system_dlkm.
 
 FASTBOOTD_PROP=$(getprop ro.twrp.fastbootd)
 if [ "$FASTBOOTD_PROP" = "1" ]; then
