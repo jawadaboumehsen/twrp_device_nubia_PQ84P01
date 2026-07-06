@@ -79,11 +79,7 @@ BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 # Workaround for error copying vendor files to recovery ramdisk
 TARGET_COPY_OUT_VENDOR := vendor
 
-TARGET_COPY_OUT_ODM := odm
-BOARD_ODMIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_USES_VENDOR_DLKMIMAGE := true
-TARGET_COPY_OUT_VENDOR_DLKM := vendor_dlkm
-BOARD_VENDOR_DLKMIMAGE_FILE_SYSTEM_TYPE := ext4
 
 BOARD_RECOVERYIMAGE_PARTITION_SIZE  := 104857600   # 25600 sectors × 4096
 
@@ -93,10 +89,12 @@ BOARD_SUPER_PARTITION_GROUPS := nubia_dynamic_partitions
 BOARD_NUBIA_DYNAMIC_PARTITIONS_SIZE := 17175674880  # super - 4 MiB overhead
 BOARD_NUBIA_DYNAMIC_PARTITIONS_PARTITION_LIST := system system_ext product vendor vendor_dlkm odm
 
-
-TARGET_COPY_OUT_PRODUCT := product
-TARGET_COPY_OUT_SYSTEM_EXT := system_ext
-
+# All erofs on the real device (confirmed via superblock magic + /proc/mounts
+# on-device); recovery.fstab already lists erofs before the ext4 fallback, so
+# this only affects TWRP's own mkfs type if it ever formats one from scratch.
+BOARD_PARTITION_LIST := $(call to-upper, $(BOARD_NUBIA_DYNAMIC_PARTITIONS_PARTITION_LIST))
+$(foreach p, $(BOARD_PARTITION_LIST), $(eval BOARD_$(p)IMAGE_FILE_SYSTEM_TYPE := erofs))
+$(foreach p, $(BOARD_PARTITION_LIST), $(eval TARGET_COPY_OUT_$(p) := $(call to-lower, $(p))))
 
 BOARD_BOOTIMAGE_PARTITION_SIZE      := 100663296   # 24576 sectors × 4096
 
@@ -111,10 +109,6 @@ BOARD_DTBOIMG_PARTITION_SIZE          := 25165824   # 6144  sectors × 4096
 # File systems
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
-BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE := ext4
-BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE := ext4
-BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE := ext4
-BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_USERDATAIMAGE_FILE_SYSTEM_TYPE := f2fs
 
 # Extras
@@ -188,6 +182,7 @@ TW_FRAMERATE := 165
 TW_MAX_PRINT_LOOPS := 20
 RECOVERY_SDCARD_ON_DATA := true
 TARGET_RECOVERY_QCOM_RTC_FIX := true
+TW_CUSTOM_CPU_TEMP_PATH := "/sys/class/thermal/thermal_zone9/temp" # cpu-0-0-0, confirmed live on device
 TW_EXCLUDE_DEFAULT_USB_INIT := true
 TW_NO_SCREEN_BLANK := true
 TW_USE_DMCTL := true
