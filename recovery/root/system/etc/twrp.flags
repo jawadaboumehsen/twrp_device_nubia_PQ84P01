@@ -1,0 +1,24 @@
+# Adds flashimg=1 to raw-image partitions so they appear individually in
+# TWRP's Install Image screen (otherwise only Boot and the synthesized Super
+# pseudo-partition show up — see partitionmanager.cpp's Get_Partition_List,
+# ListType "flashimg", and partition.cpp's Can_Flash_Img, which defaults false
+# and is only auto-true for /boot, /init_boot, /recovery, /system_image,
+# /vendor_image). boot/init_boot/vendor_boot/dtbo already exist as emmc lines
+# in recovery.fstab, so these entries just merge the flashimg flag onto them;
+# recovery/vbmeta/vbmeta_system don't have fstab lines at all and are added
+# fresh by TWRP's twrp.flags merge step (partitionmanager.cpp:442).
+#
+# Not included: system/vendor/product/system_ext/odm/vendor_dlkm/system_dlkm
+# (logical erofs partitions) — flashing into these directly via the GUI
+# bypasses vbmeta's chained hash descriptors and breaks verified boot unless
+# vbmeta is regenerated to match, so they're deliberately left out here.
+#
+# mount point          fstype  device                                     flags
+
+/boot                  emmc    /dev/block/bootdevice/by-name/boot          flags=display="Boot";backup=1;slotselect;flashimg=1
+/init_boot             emmc    /dev/block/bootdevice/by-name/init_boot     flags=display="Init Boot";backup=1;slotselect;flashimg=1
+/vendor_boot           emmc    /dev/block/bootdevice/by-name/vendor_boot   flags=display="Vendor Boot";backup=1;slotselect;flashimg=1
+/dtbo                  emmc    /dev/block/bootdevice/by-name/dtbo          flags=display="DTBO";backup=1;slotselect;flashimg=1
+/recovery              emmc    /dev/block/bootdevice/by-name/recovery      flags=display="Recovery";backup=1;slotselect;flashimg=1
+/vbmeta                emmc    /dev/block/bootdevice/by-name/vbmeta        flags=display="VBMeta";backup=1;slotselect;flashimg=1
+/vbmeta_system         emmc    /dev/block/bootdevice/by-name/vbmeta_system flags=display="VBMeta System";backup=1;slotselect;flashimg=1

@@ -84,15 +84,20 @@ BOARD_USES_VENDOR_DLKMIMAGE := true
 BOARD_RECOVERYIMAGE_PARTITION_SIZE  := 104857600   # 25600 sectors × 4096
 
 # Dynamic Partition — super = 4194304 sectors × 4096 = 17179869184 (16 GiB)
+# Group name confirmed against the real device: dd'd the first 4MiB of
+# /dev/block/by-name/super and grepped the raw liblp metadata for the group
+# name string -> "qti_dynamic_partitions_a". build_super_image.py appends the
+# _a/_b slot suffix itself (group + "_a"), so BOARD_SUPER_PARTITION_GROUPS
+# below must be the base name without the suffix.
 BOARD_SUPER_PARTITION_SIZE := 17179869184
-BOARD_SUPER_PARTITION_GROUPS := nubia_dynamic_partitions
-BOARD_NUBIA_DYNAMIC_PARTITIONS_SIZE := 17175674880  # super - 4 MiB overhead
-BOARD_NUBIA_DYNAMIC_PARTITIONS_PARTITION_LIST := system system_ext product vendor vendor_dlkm odm
+BOARD_SUPER_PARTITION_GROUPS := qti_dynamic_partitions
+BOARD_QTI_DYNAMIC_PARTITIONS_SIZE := 17175674880  # super - 4 MiB overhead
+BOARD_QTI_DYNAMIC_PARTITIONS_PARTITION_LIST := system system_ext product vendor vendor_dlkm odm system_dlkm
 
 # All erofs on the real device (confirmed via superblock magic + /proc/mounts
 # on-device); recovery.fstab already lists erofs before the ext4 fallback, so
 # this only affects TWRP's own mkfs type if it ever formats one from scratch.
-BOARD_PARTITION_LIST := $(call to-upper, $(BOARD_NUBIA_DYNAMIC_PARTITIONS_PARTITION_LIST))
+BOARD_PARTITION_LIST := $(call to-upper, $(BOARD_QTI_DYNAMIC_PARTITIONS_PARTITION_LIST))
 $(foreach p, $(BOARD_PARTITION_LIST), $(eval BOARD_$(p)IMAGE_FILE_SYSTEM_TYPE := erofs))
 $(foreach p, $(BOARD_PARTITION_LIST), $(eval TARGET_COPY_OUT_$(p) := $(call to-lower, $(p))))
 
